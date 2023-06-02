@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       delete_flag: {
-        allowNull: false,
+        defaultValue: false,
         type: Sequelize.BOOLEAN
       },
       createdAt: {
@@ -26,7 +26,8 @@ module.exports = {
         type: Sequelize.DATE
       },
 
-    });
+    }
+    );
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('category');

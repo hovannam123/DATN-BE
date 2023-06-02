@@ -31,9 +31,14 @@ module.exports = {
       },
       price: {
         allowNull: false,
-        type: Sequelize.DECIMAL(10, 0)
+        type: Sequelize.DECIMAL(10, 2)
       },
       status: {
+        defaultValue: true,
+        type: Sequelize.BOOLEAN
+      },
+      delete_flag: {
+        defaultValue: false,
         type: Sequelize.BOOLEAN
       },
       createdAt: {
@@ -44,7 +49,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-
     });
   },
   async down(queryInterface, Sequelize) {

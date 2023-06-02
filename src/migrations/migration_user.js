@@ -21,8 +21,21 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      role_id: {
+      active: {
+        defaultValue: false,
+        type: Sequelize.BOOLEAN
+      },
+      expired_time: {
         allowNull: false,
+        defaultValue: Sequelize.fn('now'),
+        type: Sequelize.DATE
+      },
+      verify_code: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      role_id: {
+        defaultValue: 2,
         type: Sequelize.BIGINT,
         references: {
           model: "Role",

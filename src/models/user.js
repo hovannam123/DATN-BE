@@ -13,17 +13,23 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsTo(models.Role, { foreignKey: "role_id" })
       User.hasOne(models.UserInformation, { foreignKey: "user_id", as: "user_information_data" })
       User.hasMany(models.UserInformation, { foreignKey: "user_id", as: "user_fovarite_data" })
+      User.hasMany(models.CartItem, { foreignKey: "user_id", as: "user_data" })
+      User.hasMany(models.Bill, { foreignKey: "bill_id" })
     }
   }
   User.init({
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     phone_number: DataTypes.STRING,
+    active: DataTypes.BOOLEAN,
+    expired_time: DataTypes.DATE,
+    verify_code: DataTypes.STRING,
     role_id: DataTypes.BIGINT,
   }, {
     sequelize,
     freezeTableName: true,
-    modelName: "User"
+    modelName: "User",
+    tableName: "user"
   });
   return User;
 };

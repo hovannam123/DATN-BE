@@ -5,8 +5,10 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class ProductSize extends Model {
     static associate(models) {
-      ProductSize.belongsTo(models.Size, { foreignKey: "size_id" }),
-        ProductSize.belongsTo(models.Product, { foreignKey: "product_id" })
+      ProductSize.belongsTo(models.Product, { foreignKey: "product_id" });
+      ProductSize.belongsTo(models.Size, { foreignKey: "size_id" });
+      ProductSize.hasMany(models.CartItem, { foreignKey: "product_size_id" });
+      ProductSize.hasOne(models.BillItem, { foreignKey: "product_size_id" });
     }
   }
   ProductSize.init({
@@ -16,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     freezeTableName: true,
-    tableName: "ProductSize"
+    modelName: "ProductSize",
+    tableName: 'product_size'
   });
   return ProductSize;
 };

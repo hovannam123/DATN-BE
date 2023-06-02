@@ -5,7 +5,7 @@ let createNewSize = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.size_name || !data.weigh || !data.height) {
-                resolve("Missing required parameter!")
+                resolve({ message: "Missing required parameter!" })
             }
             else {
                 let [object, created] = await db.Size.findOrCreate({
@@ -18,14 +18,14 @@ let createNewSize = (data) => {
                     }
                 })
                 if (!created) {
-                    resolve("Size already exists")
+                    resolve({ message: "Size already exists" })
                 }
                 else {
-                    resolve("Create new size success")
+                    resolve({ message: "Create new size success" })
                 }
             }
         } catch (e) {
-            reject(e)
+            reject({ error: e })
         }
     })
 }
@@ -33,26 +33,104 @@ let createNewSize = (data) => {
 let getAllSize = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let sizes = await db.Size.findAll()
-            if (!sizes) {
+            db.Size.findAll(
+                {
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"]
+                    },
+                }
+            ).then(data => {
                 resolve({
-                    message: "Khong ton tai size"
+                    sizes: data
                 })
-            }
-            else {
-                resolve({
-                    sizes
-                })
-            }
+            }).catch(err => {
+                reject({ error: err })
+            })
         } catch (e) {
             reject(e)
         }
     })
 }
 
+let deleteSize = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    message: "Invalid id"
+                })
+            }
+            else {
+                let count = await db.Size.update({
+                    delete_flag: true,
+                },
+                    {
+                        where: {
+                            id: id
+                        }
+                    })
+                if (count > 0) {
+                    resolve({
+                        message: "Delete success"
+                    })
+                }
+                else {
+                    resolve({
+                        message: "Delete fail"
+                    })
+                }
+            }
+        } catch (error) {
+            reject({
+                error: error
+            })
+        }
+    })
+}
 
+let updateSize = (id, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id || !data.size_name || !data.weigh || !data.height) {
+                resolve({
+                    message: "Missing required parameter!"
+                })
+            }
+            else {
+                let count = await db.Size.update({
+                    size_name: data.size_name,
+                    weigh: data.weigh,
+                    height: data.height
+                },
+                    {
+                        where: {
+                            id: id,
+                            delete_flag: 0
+                        }
+                    })
+
+                if (count > 0) {
+                    resolve({
+                        message: "Update success"
+                    })
+                }
+                else {
+                    resolve({
+                        message: "Update fail"
+                    })
+                }
+            }
+        } catch (error) {
+            reject({
+                error: error
+            })
+        }
+    })
+}
 
 module.exports = {
     createNewSize,
-    getAllSize
+    getAllSize,
+    updateSize,
+    deleteSize
 }

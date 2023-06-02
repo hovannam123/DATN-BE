@@ -1,35 +1,55 @@
 import db from "../models"
 import { genSaltSync, hashSync, compareSync } from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { generateDigitCode, sendMail } from "../service/email_service"
+import { raw } from "body-parser"
 
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email) {
-                resolve("Missing param")
+            if (!data.email || !data.password) {
+                resolve({
+                    statusCode: 400,
+                    message: "Missing required parameter!"
+                })
             }
             else {
                 let salt = genSaltSync(10)
                 let password = hashSync(data.password, salt)
-                const [object, created] = await db.User.findOrCreate({
+                const code = generateDigitCode()
+                console.log("aaa")
+                const [user, created] = await db.User.findOrCreate({
                     where: {
                         email: data.email
                     },
                     defaults: {
                         password: password,
                         phone_number: data.phone_number,
-                        role_id: data.role_id
+                        verify_code: code
                     }
-                })
+                }).catch((error) => {
+                    resolve({
+                        statusCode: 400,
+                        message: error
+                    })
+                }
+                )
                 if (!created) {
-                    resolve("Email already exists")
+                    resolve({
+                        statusCode: 400,
+                        message: "Email already exists"
+                    })
                 }
                 else {
-                    resolve("Create new user success")
+                    sendMail(user.email, code)
+                    resolve({
+                        statusCode: 200,
+                        message: "Create new user success"
+                    })
                 }
             }
         } catch (e) {
-            reject(e)
+            reject({ error: e })
         }
     })
 }
@@ -38,22 +58,22 @@ let createNewUser = (data) => {
 let getAllUser = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let data = db.User.findAll({
+            await db.User.findAll({
+                where: {
+                    role_id: 1
+                },
                 attributes: {
-                    exclude: ["role_id"]
+                    exclude: ["role_id", "verify_code", "expired_time"]
                 },
-                include: {
-                    model: db.Role,
-                    attributes: {
-                        exclude: ["createdAt", "updatedAt"]
-                    }
-                },
-                raw: true,
-                nest: true
+
+                raw: false
+            }).then(data => {
+                resolve({ data: data })
+            }).catch(err => {
+                reject({ error: err })
             })
-            resolve(data)
         } catch (err) {
-            reject(err)
+            reject({ error: err })
         }
     })
 }
@@ -66,7 +86,7 @@ let getDetailUser = (id) => {
                     message: "Missing required parameter!"
                 })
             } else {
-                let data = await db.User.findOne({
+                await db.User.findOne({
                     subQuery: false,
                     where: {
                         id: id
@@ -77,8 +97,11 @@ let getDetailUser = (id) => {
                             model: db.Role,
                         }
                     ],
+                }).then(data => {
+                    resolve({ data: data })
+                }).catch(err => {
+                    reject({ error: err })
                 })
-                resolve({ user: data })
             }
         } catch (err) {
             reject(err)
@@ -91,6 +114,7 @@ let login = (data) => {
         try {
             if (!data.email || !data.password) {
                 resolve({
+                    statusCode: 400,
                     message: "Missing required parameter!"
                 })
             }
@@ -98,10 +122,13 @@ let login = (data) => {
                 let user = await db.User.findOne({
                     where: {
                         email: data.email
-                    }
+                    },
+                    raw: false
                 })
+                console.log(user)
                 if (!user) {
                     resolve({
+                        statusCode: 400,
                         message: "Your email invalid!"
                     })
                 }
@@ -109,14 +136,16 @@ let login = (data) => {
                     let resultCompare = compareSync(data.password, user.password)
                     if (!resultCompare) {
                         resolve({
+                            statusCode: 400,
                             message: "Your email/password incorrect"
                         })
                     }
                     else {
                         let token = jwt.sign({ data: user }, process.env.JWT_KEY, { expiresIn: "1h" })
                         resolve({
-                            message: "Login success!",
+                            statusCode: 200,
                             token: token,
+                            user: user
                         })
                     }
                 }
@@ -127,9 +156,148 @@ let login = (data) => {
     })
 }
 
+let verify = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.code) {
+                resolve({
+                    statusCode: 400,
+                    message: "Missing required parameter!"
+                })
+            } else {
+                await db.User.findOne({
+                    where: {
+                        email: data.email
+                    }
+                }).then(async user => {
+
+                    const currentTime = new Date();
+
+                    if ((currentTime.getTime() - user.expired_time.getTime()) / (1000 * 60) < 5) {
+                        if (user.verify_code == data.code) {
+                            await db.User.update(
+                                {
+                                    active: true
+                                },
+                                {
+                                    where: {
+                                        id: user.id
+                                    },
+                                })
+                            resolve({
+                                statusCode: 200,
+                                message: "Verify success!"
+                            })
+                        }
+                        else {
+                            resolve({
+                                statusCode: 400,
+                                message: "The code is not correct"
+                            })
+                        }
+
+                    }
+                    else (
+                        resolve({
+                            statusCode: 400,
+                            message: "Expiration time"
+                        })
+                    )
+                }).catch(error => {
+                    resolve({
+                        statusCode: 400,
+                        error: "No find email"
+                    })
+                })
+            }
+        } catch (error) {
+            reject({
+                error: error
+            })
+        }
+    })
+}
+
+let forgetPassword = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email) {
+                resolve({
+                    statusCode: 400,
+                    message: "Missing required parameter!"
+                })
+            }
+            else {
+                await db.User.findOne({
+                    where: {
+                        email: data.email
+                    }
+                }).then(async user => {
+                    await user.update({ expired_time: new Date() })
+                    sendMail(user.email, user.verify_code)
+                    resolve({
+                        statusCode: 200,
+                        message: "Send verify code to your email success"
+                    })
+                }).catch(error => {
+                    resolve({
+                        statusCode: 400,
+                        message: "No find your email"
+                    })
+                })
+            }
+        } catch (error) {
+            resolve({
+                statusCode: 400,
+
+                message: error
+            })
+        }
+    })
+}
+
+
+let resetPassword = (data) => {
+    return new Promise(async (resovle, reject) => {
+        try {
+            await db.User.findOne({
+                where: {
+                    email: data.email,
+                }
+            }).then(async user => {
+                let salt = genSaltSync(10)
+                let password = hashSync(data.password, salt)
+                await user.update(
+                    {
+                        password: password
+                    }
+                )
+                resovle({
+                    statusCode: 200,
+                    message: "Reset password success"
+                })
+            }).catch(error => {
+                resovle({
+                    statusCode: 400,
+                    message: "Error from server"
+                })
+            })
+        } catch (error) {
+            resovle({
+                statusCode: 400,
+                message: "Error from server"
+
+            })
+        }
+    })
+}
+
 module.exports = {
     getAllUser,
     createNewUser,
     getDetailUser,
-    login
+    login,
+    verify,
+    forgetPassword,
+    resetPassword,
 }

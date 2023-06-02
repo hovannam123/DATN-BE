@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Role extends Model {
     static associate(models) {
-      Role.hasMany(models.User, { foreignKey: "role_id", as: "user_role_data" })
+      Role.hasMany(models.User, { foreignKey: "role_id" })
     }
   }
   Role.init({
@@ -13,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     freezeTableName: true,
-    tableName: "Role"
+    modelName: "Role",
+    tableName: "role"
   });
   return Role;
 };

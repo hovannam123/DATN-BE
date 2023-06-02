@@ -21,6 +21,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      delete_flag: {
+        defaultValue: false,
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -29,8 +33,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-
-    });
+    }
+    );
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('size');

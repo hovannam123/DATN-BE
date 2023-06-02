@@ -10,9 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Product.belongsTo(models.Category, { foreignKey: "category_id" }),
-        Product.hasMany(models.ProductSize, { foreignKey: "product_id", as: "product_size_data" }),
-        Product.hasMany(models.ProductFavourite, { foreignKey: "product_id", as: "product_favorite_data" })
+      Product.belongsTo(models.Category, { foreignKey: "category_id" });
+      Product.hasMany(models.ProductSize, {
+        foreignKey: "product_id",
+        as: "size_data"
+      });
+      Product.hasMany(models.ProductFavourite, { foreignKey: "product_id", as: "product_favorite_data" });
+      Product.hasMany(models.VoucherProduct, { foreignKey: "product_id" })
+
     }
   }
   Product.init({
@@ -22,10 +27,12 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.STRING,
     price: DataTypes.DECIMAL,
     status: DataTypes.BOOLEAN,
+    delete_flag: DataTypes.BOOLEAN
   }, {
     sequelize,
     freezeTableName: true,
-    tableName: "Product"
+    modelName: "Product",
+    tableName: "product",
   });
   return Product;
 };

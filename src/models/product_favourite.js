@@ -15,7 +15,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     freezeTableName: true,
-    tableName: "ProductFavourite"
+    modelName: "ProductFavourite",
+    tableName: 'product_favourite'
+
   });
   return ProductFavourite;
 };
