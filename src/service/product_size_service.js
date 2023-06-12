@@ -4,42 +4,48 @@ import db from "../models"
 let getAllProductSize = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let products = await db.ProductSize.findAll({
+            await db.Product.findAll({
+
                 attributes: {
-                    exclude: ["createdAt", "updatedAt", "size_id", "product_id"]
+                    exclude: ["createdAt", "updatedAt", "category_id"]
                 },
                 include: [
                     {
-                        model: db.Product,
-                        as: "products",
+                        model: db.Category,
                         attributes: {
-                            exclude: ["createdAt", "updatedAt"]
-                        },
+                            exclude: ["createdAt", "updatedAt", "delete_flag"]
+                        }
                     },
                     {
-                        model: db.Size,
-                        as: "sizes",
-
-                        attributes: {
-                            exclude: ["createdAt", "updatedAt"]
-                        },
-                    }
+                        model: db.ProductSize,
+                        as: "size_data",
+                        attributes: ["amount"],
+                        include: [
+                            {
+                                model: db.Size,
+                                attributes: {
+                                    exclude: ["createdAt", "updatedAt", "delete_flag"]
+                                }
+                            }],
+                    },
                 ],
-                raw: true,
-                nest: true
-            })
-            if (!products) {
+                raw: false
+            }).then(products => {
                 resolve({
-                    message: "Empty product"
-                })
-            }
-            else {
-                resolve({
+                    statusCode: 200,
                     data: products
                 })
-            }
+            }).catch(err => {
+                resolve({
+                    statusCode: 400,
+                    message: err.message
+                })
+            })
         } catch (error) {
-            reject(error)
+            reject({
+                statusCode: 400,
+                message: "Server error"
+            })
         }
     })
 }

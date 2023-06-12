@@ -25,8 +25,68 @@ let getAllBill = async (req, res) => {
     }
 }
 
+let getBillCount = async (req, res) => {
+    let result = await BillItemService.getBillCount()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
+let getAllBillItem = async (req, res) => {
+    let result = await BillItemService.getAllBillItem()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
+let getAllBillItemPending = async (req, res) => {
+    let result = await BillItemService.getAllBillItemPending()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
+let verifyOrder = async (req, res) => {
+    let result = await BillItemService.verifyOrder(req.query.id)
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
+let verifyAllOrder = async (req, res) => {
+    let result = await BillItemService.verifyAllOrder()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
+let getTopSellingProducts = async (req, res) => {
+    let result = await BillItemService.getTopSellingProducts()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
 module.exports = {
     createNewBillItem,
     getAllBillPeding,
-    getAllBill
+    getAllBill,
+    getBillCount,
+    getAllBillItem,
+    getAllBillItemPending,
+    verifyOrder,
+    verifyAllOrder,
+    getTopSellingProducts
 }

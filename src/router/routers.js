@@ -8,6 +8,8 @@ import CartItemController from "../controller/cart_item_controller.js"
 import VoucherController from "../controller/voucher_controller.js"
 import BillItemController from "../controller/bill_item_controller.js"
 import PaymentController from "../controller/payment_controller.js"
+import ProductFavouriteController from "../controller/product_favourite_controller.js"
+import ReviewProductController from "../controller/review_product_controller.js"
 import { checkToken, userPermit, adminPermit } from "../middleware/auth/token_validation.js"
 
 
@@ -29,7 +31,7 @@ let initApiRoutes = (app) => {
     router.get('/get-detail-user', checkToken, adminPermit, UserController.getDetailUser)
     router.get('/all-category', CategoryController.getAllCategory)
     router.post('/create-category', CategoryController.createNewCategory)
-    router.patch('/delete-size', SizeController.deleteSize)
+    router.delete('/delete-size', SizeController.deleteSize)
     router.put('/update-size', SizeController.updateSize)
     router.post('/create-product', ProductController.createNewProduct)
     router.get('/all-product', ProductController.getAllProduct)
@@ -53,6 +55,15 @@ let initApiRoutes = (app) => {
     router.put('/decease-quantity-item', CartItemController.decreaseQuantity)
     router.put('/incease-quantity-item', CartItemController.increaseQuantity)
 
+    router.post('/create-product-favourite', ProductFavouriteController.createNewFavourite)
+    router.get('/all-product-favourite', ProductFavouriteController.getAllProductFavourite)
+    router.delete('/delete-product-favourite', ProductFavouriteController.deleteProductFavourite)
+    router.get('/top-product-favourite', ProductFavouriteController.getTopProductFavourite)
+
+
+    router.get('/all-review-product', ReviewProductController.getAllComment)
+    router.post('/create-comment', ReviewProductController.createNewComment)
+
 
 
     router.post('/payment', PaymentController.payment)
@@ -61,6 +72,12 @@ let initApiRoutes = (app) => {
     router.post('/create-bill-item', BillItemController.createNewBillItem)
     router.get('/all-bill-pending', BillItemController.getAllBillPeding)
     router.get('/all-bill', BillItemController.getAllBill)
+    router.get('/bill-count', BillItemController.getBillCount)
+    router.get('/all-bill-item', BillItemController.getAllBillItem)
+    router.get('/all-bill-item-pending', BillItemController.getAllBillItemPending)
+    router.put('/verify-order', BillItemController.verifyOrder)
+    router.put('/verify-all-order', BillItemController.verifyAllOrder)
+    router.get('/top-selling-product', BillItemController.getTopSellingProducts)
 
 
 

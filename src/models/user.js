@@ -11,10 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.belongsTo(models.Role, { foreignKey: "role_id" })
-      User.hasOne(models.UserInformation, { foreignKey: "user_id", as: "user_information_data" })
-      User.hasMany(models.UserInformation, { foreignKey: "user_id", as: "user_fovarite_data" })
+      User.hasOne(models.UserInformation, { foreignKey: "user_id" })
       User.hasMany(models.CartItem, { foreignKey: "user_id", as: "user_data" })
       User.hasMany(models.Bill, { foreignKey: "bill_id" })
+      User.hasMany(models.ReviewProduct, { foreignKey: "user_id" })
+
     }
   }
   User.init({

@@ -15,8 +15,7 @@ let getAllProduct = () => {
                         exclude: ["createdAt", "updatedAt"]
                     }
                 },
-                raw: true,
-                nest: true
+                raw: false
             }).then(product => {
                 resolve({
                     statusCode: 200,

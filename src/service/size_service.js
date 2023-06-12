@@ -5,7 +5,11 @@ let createNewSize = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.size_name || !data.weigh || !data.height) {
-                resolve({ message: "Missing required parameter!" })
+                resolve({
+                    statusCode: 400,
+
+                    message: "Missing required parameter!"
+                })
             }
             else {
                 let [object, created] = await db.Size.findOrCreate({
@@ -18,10 +22,17 @@ let createNewSize = (data) => {
                     }
                 })
                 if (!created) {
-                    resolve({ message: "Size already exists" })
+                    resolve({
+                        statusCode: 400,
+                        message: "Size already exists"
+                    })
                 }
                 else {
-                    resolve({ message: "Create new size success" })
+                    resolve({
+                        statusCode: 200,
+
+                        message: "Create new size success"
+                    })
                 }
             }
         } catch (e) {
@@ -33,7 +44,7 @@ let createNewSize = (data) => {
 let getAllSize = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            db.Size.findAll(
+            await db.Size.findAll(
                 {
                     attributes: {
                         exclude: ["createdAt", "updatedAt"]
@@ -41,7 +52,7 @@ let getAllSize = () => {
                 }
             ).then(data => {
                 resolve({
-                    sizes: data
+                    data: data
                 })
             }).catch(err => {
                 reject({ error: err })
@@ -57,32 +68,34 @@ let deleteSize = (id) => {
         try {
             if (!id) {
                 resolve({
+                    statusCode: 400,
                     message: "Invalid id"
                 })
             }
             else {
-                let count = await db.Size.update({
-                    delete_flag: true,
-                },
+                await db.Size.destroy(
                     {
                         where: {
                             id: id
                         }
+                    }).then(
+                        resolve({
+                            statusCode: 200,
+
+                            message: "Delete success"
+                        })
+                    ).catch(err => {
+                        resolve({
+                            statusCode: 400,
+                            message: "Delete fail"
+                        })
                     })
-                if (count > 0) {
-                    resolve({
-                        message: "Delete success"
-                    })
-                }
-                else {
-                    resolve({
-                        message: "Delete fail"
-                    })
-                }
             }
         } catch (error) {
             reject({
-                error: error
+                statusCode: 400,
+
+                error: error.message
             })
         }
     })

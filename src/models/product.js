@@ -15,9 +15,9 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "product_id",
         as: "size_data"
       });
-      Product.hasMany(models.ProductFavourite, { foreignKey: "product_id", as: "product_favorite_data" });
-      Product.hasMany(models.VoucherProduct, { foreignKey: "product_id" })
-
+      Product.hasMany(models.ProductFavourite, { foreignKey: "product_id" });
+      Product.hasMany(models.VoucherProduct, { foreignKey: "product_id" });
+      Product.hasMany(models.ReviewProduct, { foreignKey: "product_id" })
     }
   }
   Product.init({

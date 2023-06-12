@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('user_information', {
+    await queryInterface.createTable('review_product', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -17,20 +17,17 @@ module.exports = {
           key: "id",
         },
       },
-      first_name: {
-        type: Sequelize.STRING
+      product_id: {
+        allowNull: false,
+        type: Sequelize.BIGINT,
+        references: {
+          model: "product",
+          key: "id",
+        },
       },
-      last_name: {
-        type: Sequelize.STRING
-      },
-      gender: {
-        type: Sequelize.BOOLEAN
-      },
-      birthday: {
-        type: Sequelize.DATE
-      },
-      user_image: {
-        type: Sequelize.STRING(500)
+      content: {
+        allowNull: false,
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
@@ -40,10 +37,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('user_information');
+    await queryInterface.dropTable('review_product');
   }
 };
