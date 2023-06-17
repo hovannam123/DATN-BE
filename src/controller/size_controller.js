@@ -14,8 +14,13 @@ let createNewSize = async (req, res) => {
 
 
 let getAllSize = async (req, res) => {
-    let data = await SizeService.getAllSize()
-    return res.status(200).json(data)
+
+    let result = await SizeService.getAllSize()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
 let deleteSize = async (req, res) => {

@@ -52,13 +52,20 @@ let getAllSize = () => {
                 }
             ).then(data => {
                 resolve({
+                    statusCode: 200,
                     data: data
                 })
             }).catch(err => {
-                reject({ error: err })
+                resolve({
+                    statusCode: 400,
+                    message: err.message
+                })
             })
         } catch (e) {
-            reject(e)
+            resolve({
+                statusCode: 400,
+                message: err.message
+            })
         }
     })
 }

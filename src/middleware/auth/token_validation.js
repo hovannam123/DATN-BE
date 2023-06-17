@@ -10,18 +10,19 @@ let checkToken = (req, res, next) => {
         jwt.verify(token, process.env.JWT_KEY, (err, decode) => {
             if (err) {
                 return res.json({
+                    statusCode: 400,
                     message: "Invalid token"
                 })
             }
             else {
                 req.data = decode.data
-                // console.log("decodeeeeeeeeeeeeeeee:" + decode.data.role_id)
                 next()
             }
         })
     }
     else {
         return res.json({
+            statusCode: 400,
             message: "Access denied!"
         })
     }
@@ -34,6 +35,8 @@ let userPermit = (req, res, next) => {
     }
     else {
         return res.json({
+            statusCode: 400,
+
             message: "Permition denied!"
         })
     }
@@ -46,6 +49,8 @@ let adminPermit = (req, res, next) => {
     }
     else {
         return res.json({
+            statusCode: 400,
+
             message: "Permition denied!"
         })
     }

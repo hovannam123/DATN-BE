@@ -5,8 +5,12 @@ import EmailService from "../service/email_service"
 
 
 let getAllUser = async (req, res) => {
-    let data = await UserService.getAllUser()
-    return res.status(200).json(data)
+    let message = await UserService.getAllUser()
+    if (message.statusCode == 200) {
+        res.status(200).json(message);
+    } else {
+        res.status(400).json(message);
+    }
 }
 
 let createNewUser = async (req, res) => {
@@ -19,9 +23,23 @@ let createNewUser = async (req, res) => {
 }
 
 let getDetailUser = async (req, res) => {
-    let infor = await UserService.getDetailUser(req.query.id)
-    return res.status(200).json(infor)
+    let message = await UserService.getDetailUser(req.query.id)
+    if (message.statusCode == 200) {
+        res.status(200).json(message);
+    } else {
+        res.status(400).json(message);
+    }
 }
+
+let updateUserInformation = async (req, res) => {
+    let message = await UserService.updateUserInformation(req.body, req.query.id)
+    if (message.statusCode == 200) {
+        res.status(200).json(message);
+    } else {
+        res.status(400).json(message);
+    }
+}
+
 let login = async (req, res) => {
     let result = await UserService.login(req.body)
     if (result.statusCode == 200) {
@@ -68,4 +86,5 @@ module.exports = {
     verify,
     forgetPassword,
     resetPassword,
+    updateUserInformation
 }

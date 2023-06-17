@@ -3,7 +3,7 @@ import BillItemService from "../service/bill_item_service"
 
 
 let createNewBillItem = async (req, res) => {
-    let message = await BillItemService.createNewBillItem(req.query.user_id)
+    let message = await BillItemService.createNewBillItem(req.query.user_id, req.query.voucher_user_id)
     return res.status(200).json(message)
 }
 

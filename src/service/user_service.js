@@ -41,6 +41,9 @@ let createNewUser = (data) => {
                     })
                 }
                 else {
+                    await db.UserInformation.create({
+                        user_id: user.id,
+                    })
                     sendMail(user.email, code)
                     resolve({
                         statusCode: 200,
@@ -49,7 +52,10 @@ let createNewUser = (data) => {
                 }
             }
         } catch (e) {
-            reject({ error: e })
+            resolve({
+                statusCode: 400,
+                message: e.message
+            })
         }
     })
 }
@@ -60,20 +66,31 @@ let getAllUser = () => {
         try {
             await db.User.findAll({
                 where: {
-                    role_id: 1
+                    role_id: 2
                 },
                 attributes: {
                     exclude: ["role_id", "verify_code", "expired_time"]
                 },
-
+                include: {
+                    model: db.UserInformation
+                },
                 raw: false
             }).then(data => {
-                resolve({ data: data })
+                resolve({
+                    statusCode: 200,
+                    data: data
+                })
             }).catch(err => {
-                reject({ error: err })
+                resolve({
+                    statusCode: 400,
+                    error: err.message
+                })
             })
         } catch (err) {
-            reject({ error: err })
+            resolve({
+                statusCode: 400,
+                error: err.message
+            })
         }
     })
 }
@@ -83,28 +100,86 @@ let getDetailUser = (id) => {
         try {
             if (!id) {
                 resolve({
+                    statusCode: 400,
                     message: "Missing required parameter!"
                 })
             } else {
                 await db.User.findOne({
-                    subQuery: false,
                     where: {
                         id: id
                     },
-                    attributes: ["email", "password", "phone_number", "role_id"],
+                    attributes: {
+                        exclude: ["expired_time", "verify_code", "createdAt", "updatedAt"]
+                    },
                     include: [
                         {
-                            model: db.Role,
+                            model: db.UserInformation,
+                            attributes: {
+                                exclude: ["createdAt", "updatedAt"]
+                            },
                         }
                     ],
+                    raw: false
                 }).then(data => {
-                    resolve({ data: data })
+                    resolve({
+                        statusCode: 200,
+                        data: data
+                    })
                 }).catch(err => {
-                    reject({ error: err })
+                    resolve({
+                        statusCode: 400,
+
+                        message: err.message
+                    })
                 })
             }
         } catch (err) {
-            reject(err)
+            resolve({
+                statusCode: 400,
+
+                message: err.message
+            })
+        }
+    })
+}
+
+
+let updateUserInformation = (data, user_id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!user_id) {
+                resolve({
+                    statusCode: 400,
+                    message: "Missing required parameter!"
+                })
+            } else {
+                await db.UserInformation.update(
+
+                    {
+                        first_name: data.first_name,
+                        last_name: data.last_name,
+                        gender: data.gender,
+                        birthday: data.birthday,
+                        user_image: data.user_image
+                    },
+                    { where: { user_id: user_id } }
+                ).then((_) => {
+                    resolve({
+                        statusCode: 200,
+                        message: "Update success"
+                    })
+                }).catch(err => {
+                    resolve({
+                        statusCode: 400,
+                        message: err.message
+                    })
+                })
+            }
+        } catch (err) {
+            resolve({
+                statusCode: 200,
+                message: err.message
+            })
         }
     })
 }
@@ -151,7 +226,12 @@ let login = (data) => {
                 }
             }
         } catch (e) {
-            reject(e)
+            resolve(
+                {
+                    statusCode: 200,
+
+                    message: e.message
+                })
         }
     })
 }
@@ -221,6 +301,7 @@ let verify = (data) => {
 let forgetPassword = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log(data.email)
             if (!data.email) {
                 resolve({
                     statusCode: 400,
@@ -233,7 +314,7 @@ let forgetPassword = (data) => {
                         email: data.email
                     }
                 }).then(async user => {
-                    await user.update({ expired_time: new Date() })
+                    await db.User.update({ expired_time: new Date() }, { where: { id: user.id } })
                     sendMail(user.email, user.verify_code)
                     resolve({
                         statusCode: 200,
@@ -242,7 +323,7 @@ let forgetPassword = (data) => {
                 }).catch(error => {
                     resolve({
                         statusCode: 400,
-                        message: "No find your email"
+                        message: error.message
                     })
                 })
             }
@@ -300,4 +381,5 @@ module.exports = {
     verify,
     forgetPassword,
     resetPassword,
+    updateUserInformation
 }

@@ -4,7 +4,7 @@ const paypal = require('paypal-rest-sdk');
 
 let payment = async (req, res) => {
 
-    let result = await PaymentService.payment(req.query.user_id)
+    let result = await PaymentService.payment(req.query.user_id, req.query.voucher_user_id)
     if (result.statusCode == 200) {
         return res.status(200).json(result)
     }
@@ -15,7 +15,7 @@ let payment = async (req, res) => {
 }
 
 let paymentSuccess = async (req, res) => {
-    let result = await PaymentService.paymentSuccess(req.query.PayerID, req.query.paymentId, req.query.user_id)
+    let result = await PaymentService.paymentSuccess(req.query.PayerID, req.query.paymentId, req.query.user_id, req.query.voucher_user_id)
     if (result.statusCode == 200) {
         return res.send(
             result.message

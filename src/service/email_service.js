@@ -15,6 +15,7 @@ let generateDigitCode = () => {
 }
 
 let sendMail = (desEmail, generateDigitCode) => {
+    console.log(desEmail)
     let transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,

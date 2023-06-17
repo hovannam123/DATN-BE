@@ -1,4 +1,6 @@
+import { where } from "sequelize"
 import db from "../models"
+import user from "../models/user"
 
 
 let createNewVoucher = (data) => {
@@ -58,6 +60,52 @@ let getAllVoucher = () => {
         }
     })
 }
+
+let getAllVoucherUser = (user_id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!user_id) {
+                resolve({
+                    statusCode: 400,
+                    message: "Missing user id"
+                })
+            }
+            else {
+                await db.VoucherUser.findAll(
+                    {
+                        where: {
+                            user_id: user_id
+                        },
+                        attributes: {
+                            exclude: ["createdAt", "updatedAt"]
+                        },
+                        include: {
+                            model: db.Voucher
+                        },
+                        raw: false
+                    },
+
+                ).then(voucher => {
+                    resolve({
+                        statusCode: 200,
+                        data: voucher
+                    })
+                }).catch(err => {
+                    resolve({
+                        statusCode: 400,
+                        message: err.message
+                    })
+                })
+            }
+        } catch (e) {
+            resolve({
+                statusCode: 400,
+                message: "Server error"
+            })
+        }
+    })
+}
+
 
 let deleteVoucher = (id) => {
     return new Promise(async (resolve, reject) => {
@@ -145,5 +193,6 @@ module.exports = {
     createNewVoucher,
     getAllVoucher,
     updateVoucher,
-    deleteVoucher
+    deleteVoucher,
+    getAllVoucherUser
 }

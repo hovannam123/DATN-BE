@@ -6,6 +6,7 @@ import ProductController from "../controller/product_controller.js"
 import ProductSizeController from "../controller/product_size_controller.js"
 import CartItemController from "../controller/cart_item_controller.js"
 import VoucherController from "../controller/voucher_controller.js"
+import VoucherUserController from "../controller/voucher_user_controller.js"
 import BillItemController from "../controller/bill_item_controller.js"
 import PaymentController from "../controller/payment_controller.js"
 import ProductFavouriteController from "../controller/product_favourite_controller.js"
@@ -28,7 +29,8 @@ let initApiRoutes = (app) => {
     //admin
     router.get('/all-user', UserController.getAllUser)
     router.post('/create-size', SizeController.createNewSize)
-    router.get('/get-detail-user', checkToken, adminPermit, UserController.getDetailUser)
+    router.get('/get-user-detail', UserController.getDetailUser)
+    router.post('/update-user', UserController.updateUserInformation)
     router.get('/all-category', CategoryController.getAllCategory)
     router.post('/create-category', CategoryController.createNewCategory)
     router.delete('/delete-size', SizeController.deleteSize)
@@ -48,12 +50,14 @@ let initApiRoutes = (app) => {
     router.get('/all-cart-item', CartItemController.getAllCartItem)
 
     router.get('/all-voucher', VoucherController.getAllVoucher)
+    router.get('/all-voucher-user', VoucherController.getAllVoucherUser)
     router.post('/create-voucher', VoucherController.createNewVoucher)
+    router.post('/create-voucher-user', VoucherUserController.createNewVoucherUser)
     router.delete('/delete-voucher', VoucherController.deleteVoucher)
 
     router.delete('/delete-cart-item', CartItemController.deleteCartItem)
-    router.put('/decease-quantity-item', CartItemController.decreaseQuantity)
-    router.put('/incease-quantity-item', CartItemController.increaseQuantity)
+    router.put('/decrease-quantity-item', CartItemController.decreaseQuantity)
+    router.put('/increase-quantity-item', CartItemController.increaseQuantity)
 
     router.post('/create-product-favourite', ProductFavouriteController.createNewFavourite)
     router.get('/all-product-favourite', ProductFavouriteController.getAllProductFavourite)

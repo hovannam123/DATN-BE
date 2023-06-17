@@ -147,11 +147,13 @@ let getAllCartItem = (user_id) => {
     })
 }
 
-let deleteCartItem = (data, user_id) => {
+let deleteCartItem = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log(data.cart_item_id)
             if (!data.cart_item_id) {
                 resolve({
+                    statusCode: 400,
                     message: "Invalid id"
                 })
             }
@@ -176,14 +178,15 @@ let deleteCartItem = (data, user_id) => {
 
             }
         } catch (error) {
-            reject({
+            resolve({
+                statusCode: 400,
                 error: error
             })
         }
     })
 }
 
-let decreaseQuantity = (data, user_id) => {
+let decreaseQuantity = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.cart_item_id) {
@@ -260,7 +263,7 @@ let decreaseQuantity = (data, user_id) => {
     })
 }
 
-let increaseQuantity = (data, user_id) => {
+let increaseQuantity = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.cart_item_id) {

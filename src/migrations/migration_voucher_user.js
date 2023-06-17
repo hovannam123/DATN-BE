@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('voucher_product', {
+    await queryInterface.createTable('voucher_user', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -17,11 +17,11 @@ module.exports = {
           key: "id",
         },
       },
-      product_id: {
+      user_id: {
         allowNull: false,
         type: Sequelize.BIGINT,
         references: {
-          model: "Product",
+          model: "User",
           key: "id",
         },
       },
@@ -36,6 +36,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('voucher_product');
+    await queryInterface.dropTable('voucher_user');
   }
 };

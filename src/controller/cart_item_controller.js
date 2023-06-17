@@ -22,7 +22,7 @@ let createNewCartItem = async (req, res) => {
 }
 
 let deleteCartItem = async (req, res) => {
-    let result = await CartItemService.deleteCartItem(req.body, req.query.user_id)
+    let result = await CartItemService.deleteCartItem(req.body)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {
@@ -31,7 +31,7 @@ let deleteCartItem = async (req, res) => {
 }
 
 let decreaseQuantity = async (req, res) => {
-    let result = await CartItemService.decreaseQuantity(req.body, req.query.user_id)
+    let result = await CartItemService.decreaseQuantity(req.body)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {
@@ -40,7 +40,7 @@ let decreaseQuantity = async (req, res) => {
 }
 
 let increaseQuantity = async (req, res) => {
-    let result = await CartItemService.increaseQuantity(req.body, req.query.user_id)
+    let result = await CartItemService.increaseQuantity(req.body)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {

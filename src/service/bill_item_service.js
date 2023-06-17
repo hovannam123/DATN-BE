@@ -1,4 +1,6 @@
 import db from "../models"
+
+
 const { Op } = require("sequelize");
 
 let getTotal_oririgin = async (data) => {
@@ -18,11 +20,11 @@ let getTotal_oririgin = async (data) => {
 
         total += product.price * data[i].quantity
     }
-    // console.log(total.toFixed(2))
     return total
 }
 
-let createNewBillItem = (user_id) => {
+
+let createNewBillItem = (user_id, voucher_user_id) => {
     return new Promise(async (resolve, reject) => {
         try {
             await db.Bill.create({
@@ -40,7 +42,6 @@ let createNewBillItem = (user_id) => {
                         user_id: user_id
                     }
                 })
-                console.log(cart_item)
                 let mappedBillItems = cart_item.map((billItem) => {
                     return {
                         bill_id: bill.id,
@@ -51,11 +52,33 @@ let createNewBillItem = (user_id) => {
                 await db.BillItem.bulkCreate(
                     mappedBillItems
                 ).then(async (bill_items) => {
+                    let percent = 0
+                    if (voucher_user_id != undefined) {
+                        let voucher = await db.VoucherUser.findOne(
+                            {
+                                where: {
+                                    id: voucher_user_id
+                                },
+                                include: {
+                                    model: db.Voucher
+                                },
+                                raw: false
+
+                            }
+                        )
+                        percent = voucher.Voucher.value_percent
+
+                    }
+                    else {
+                        percent = 0
+                    }
+
+
                     let total_origin = await getTotal_oririgin(bill_items);
                     await bill.update({
                         total_origin: total_origin,
-                        total_voucher: 0,
-                        total_payment: total_origin
+                        total_voucher: total_origin * percent,
+                        total_payment: total_origin - total_origin * percent
                     })
                     resolve({
                         message: "successs"
