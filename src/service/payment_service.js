@@ -6,14 +6,43 @@ import BillItemService from "../service/bill_item_service"
 
 let map_cart_item = {}
 let getTotal = (map) => {
+
     let total = 0;
     for (let i = 0; i < map.length; i++) {
         total += map[i].quantity * map[i].price
     }
+
     return total.toFixed(2)
 }
 
-let payment = (user_id) => {
+let getPercent = async (voucher_user_id) => {
+    let percent = 0
+    if (voucher_user_id != undefined) {
+        let voucher = await db.VoucherUser.findOne(
+            {
+                where: {
+                    id: voucher_user_id
+                },
+                include: {
+                    model: db.Voucher
+                },
+                raw: false
+
+            }
+        )
+        percent = voucher.Voucher.value_percent
+
+    }
+    else {
+        percent = 0
+    }
+
+    return percent
+}
+
+
+
+let payment = (user_id, voucher_user_id) => {
     return new Promise(async (resolve, reject) => {
         try {
             await db.CartItem.findAll({
@@ -47,7 +76,7 @@ let payment = (user_id) => {
 
                 ],
                 raw: false
-            }).then((cart_item) => {
+            }).then(async (cart_item) => {
                 map_cart_item = cart_item.map((item) => {
                     return {
                         name: item.product_size.Product.name,
@@ -57,22 +86,32 @@ let payment = (user_id) => {
                     }
                 })
 
+                let total = getTotal(map_cart_item)
+                let voucher_price = (await getPercent(voucher_user_id) * total).toFixed(2)
                 const create_payment_json = {
                     "intent": "sale",
                     "payer": {
                         "payment_method": "paypal"
                     },
                     "redirect_urls": {
-                        "return_url": "http://localhost:3000/api/v1/success?user_id=" + user_id,
-                        "cancel_url": "http://localhost:3000/api/v1/cancel"
+                        "return_url": voucher_user_id != undefined ? ("http://localhost:3000/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("http://localhost:3000/api/v1/success?user_id=" + user_id),
+                        "cancel_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/cancel"
+
+                        // "return_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/success?user_id=" + user_id,
+                        // "cancel_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/cancel"
                     },
                     "transactions": [{
                         "item_list": {
                             "items": map_cart_item
                         },
+
                         "amount": {
                             "currency": "USD",
-                            "total": getTotal(map_cart_item)
+                            "total": (total - voucher_price).toFixed(2),
+                            "details": {
+                                "subtotal": total,
+                                "discount": voucher_price // Discount amount
+                            }
                         },
                     }]
                 };
@@ -95,21 +134,23 @@ let payment = (user_id) => {
         }
         catch (err) {
             resolve({
-                err: err.message
+                message: err.message
             })
         }
     })
 }
 
 
-let paymentSuccess = (payerId, paymentId, user_id) => {
-    return new Promise((resolve, reject) => {
+let paymentSuccess = (payerId, paymentId, user_id, voucher_user_id) => {
+    return new Promise(async (resolve, reject) => {
+        let total = getTotal(map_cart_item)
+        let voucher_price = (await getPercent(voucher_user_id) * total).toFixed(2)
         const execute_payment_json = {
             "payer_id": payerId,
             "transactions": [{
                 "amount": {
                     "currency": "USD",
-                    "total": getTotal(map_cart_item)
+                    "total": (total - voucher_price).toFixed(2),
                 }
             }]
         };
@@ -123,16 +164,19 @@ let paymentSuccess = (payerId, paymentId, user_id) => {
                     message: error.message
                 })
             } else {
-                await BillItemService.createNewBillItem(user_id)
-                await db.CartItem.destroy({
-                    where: {
-                        user_id: user_id
-                    }
+                await BillItemService.createNewBillItem(user_id, voucher_user_id).then(async (bill) => {
+                    console.log(bill)
+                    await db.CartItem.destroy({
+                        where: {
+                            user_id: user_id
+                        }
+                    })
+                    resolve({
+                        statusCode: 200,
+                        message: "Success"
+                    })
                 })
-                resolve({
-                    statusCode: 200,
-                    message: "Success"
-                })
+
             }
         });
     })
