@@ -4,7 +4,10 @@ let createNewCategory = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.name) {
-                resolve({ message: "Missing required parameter!" })
+                resolve({
+                    statusCode: 400,
+                    message: "Missing required parameter!"
+                })
             }
             else {
                 let [object, created] = await db.Category.findOrCreate({
@@ -13,15 +16,24 @@ let createNewCategory = (data) => {
                     }
                 })
                 if (!created) {
-                    resolve({ message: "Category already exists" })
+                    resolve({
+                        statusCode: 400,
+
+                        message: "Category already exists"
+                    })
                 }
                 else {
-                    resolve({ message: "Create new category success" })
+                    resolve({
+                        statusCode: 200,
+
+                        message: "Create new category success"
+                    })
                 }
             }
         } catch (error) {
-            reject({
-                error: error
+            resolve({
+                statusCode: 400,
+                message: error.message
             })
         }
     })
@@ -31,23 +43,28 @@ let createNewCategory = (data) => {
 let getAllCategory = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let categories = await db.Category.findAll({
+            await db.Category.findAll({
                 attributes: {
                     exclude: ["createdAt", "updatedAt"]
                 },
+                raw: false
+            }).then((data) => {
+                resolve({
+                    statusCode: 200,
+                    data: data
+                })
+            }).catch((error) => {
+                resolve({
+                    statusCode: 400,
+                    message: error.message
+                })
             })
-            if (!categories) {
-                resolve({
-                    message: "Empty category"
-                })
-            }
-            else {
-                resolve({
-                    data: categories
-                })
-            }
-        } catch (e) {
-            reject(e)
+
+        } catch (error) {
+            resolve({
+                statusCode: 400,
+                message: error.message
+            })
         }
     })
 }

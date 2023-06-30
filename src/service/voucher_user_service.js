@@ -30,45 +30,47 @@ let createNewVoucherUser = (data) => {
 }
 
 
-// let deleteVoucherUser = (id) => {
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             if (!id) {
-//                 resolve({
-//                     statusCode: 400,
-//                     message: "Invalid voucher id"
-//                 })
-//             }
-//             else {
-//                 await db.Voucher.destroy({
-//                     where: {
-//                         id: id
-//                     },
-//                     force: true
-//                 }).then(row => {
-//                     if (row) {
-//                         resolve({
-//                             statusCode: 200,
-//                             message: 'Delete success'
-//                         })
-//                     }
-//                     else {
-//                         resolve({
-//                             statusCode: 400,
-//                             message: 'Delete fail'
-//                         })
-//                     }
-//                 })
-//             }
-//         } catch (error) {
-//             console.log(error)
-//             resolve({
-//                 statusCode: 400,
-//                 message: "Server error"
-//             })
-//         }
-//     })
-// }
+let deleteVoucherUser = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.user_id || !data.voucher_id) {
+                resolve({
+                    statusCode: 400,
+                    message: "Invalid voucher id"
+                })
+            }
+            else {
+                await db.VoucherUser.destroy({
+                    where: {
+                        user_id: data.user_id,
+                        voucher_id: data.voucher_id
+                    },
+                }).then(row => {
+                    if (row) {
+                        resolve({
+                            statusCode: 200,
+                            message: 'Delete success'
+                        })
+                    }
+                    else {
+                        resolve({
+                            statusCode: 400,
+                            message: 'Delete fail'
+                        })
+                    }
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            resolve({
+                statusCode: 400,
+                message: "Server error"
+            })
+        }
+    })
+}
+
+
 
 // let updateVoucher = (voucher_id, data) => {
 //     return new Promise(async (resolve, reject) => {
@@ -113,5 +115,6 @@ let createNewVoucherUser = (data) => {
 // }
 
 module.exports = {
-    createNewVoucherUser
+    createNewVoucherUser,
+    deleteVoucherUser
 }

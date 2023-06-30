@@ -3,8 +3,12 @@ import ProductSizeService from "../service/product_size_service"
 
 
 let createNewProductSize = async (req, res) => {
-    let message = await ProductSizeService.createNewProductSize(req.body)
-    return res.status(200).json(message)
+    let result = await ProductSizeService.createNewProductSize(req.body)
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
 let getSizeOfProduct = async (req, res) => {
@@ -17,18 +21,30 @@ let getSizeOfProduct = async (req, res) => {
 }
 
 let getAllProductSize = async (req, res) => {
-    let data = await ProductSizeService.getAllProductSize()
-    return res.status(200).json(data)
+    let result = await ProductSizeService.getAllProductSize()
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
-let deleteProduct = async (req, res) => {
-    let message = await ProductService.deleteProduct(req.query.id)
-    return res.status(200).json(message)
+let deleteProductSize = async (req, res) => {
+    let result = await ProductSizeService.deleteProductSize(req.body)
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
-let updateProduct = async (req, res) => {
-    let message = await ProductService.updateProduct(req.query.id, req.body)
-    return res.status(200).json(message)
+let importAmount = async (req, res) => {
+    let result = await ProductSizeService.importAmount(req.body, req.query.product_size_id)
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
 
@@ -36,6 +52,6 @@ module.exports = {
     createNewProductSize,
     getAllProductSize,
     getSizeOfProduct,
-    // updateProduct,
-    // deleteProduct
+    importAmount,
+    deleteProductSize
 }

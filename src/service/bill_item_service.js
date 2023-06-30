@@ -227,6 +227,69 @@ let getAllBill = () => {
     })
 }
 
+let getAllBilItemUser = (user_id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            await db.Bill.findAll({
+                attributes: {
+                    exclude: ["bill_id"]
+                },
+                where: {
+                    user_id: user_id
+                },
+                include: [
+                    {
+                        model: db.BillItem,
+                        attributes: {
+                            exclude: ["product_size_id", "bill_id", "id"]
+                        },
+                        include: [
+                            {
+                                model: db.ProductSize,
+                                attributes: {
+                                    exclude: ["createdAt", "updatedAt", "size_id", "product_id"]
+                                },
+                                include: [
+                                    {
+                                        model: db.Product,
+                                        attributes: {
+                                            exclude: ["createdAt", "updatedAt"]
+                                        }
+                                    },
+                                    {
+                                        model: db.Size,
+                                        attributes: {
+                                            exclude: ["createdAt", "updatedAt"]
+                                        }
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+                raw: false,
+            }).then((bill) => {
+                resolve({
+                    statusCode: 200,
+                    data: bill
+                })
+            }).catch((err) => {
+                console.log(err)
+                resolve({
+                    statusCode: 400,
+                    message: err.message
+                })
+            })
+        } catch (err) {
+            resolve({
+                statusCode: 400,
+                message: err.message
+            })
+        }
+    })
+}
+
 let getAllBillItem = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -494,7 +557,8 @@ module.exports = {
     getAllBillItemPending,
     verifyOrder,
     verifyAllOrder,
-    getTopSellingProducts
+    getTopSellingProducts,
+    getAllBilItemUser
 }
 
 

@@ -22,7 +22,7 @@ let getAllVoucher = async (req, res) => {
 }
 
 let deleteVoucher = async (req, res) => {
-    let result = await VoucherService.deleteVoucher(req.query.voucher_id)
+    let result = await VoucherService.deleteVoucher(req.body)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {

@@ -1,6 +1,6 @@
 
 import db from "../models"
-
+const { Op } = require("sequelize");
 
 let getAllProduct = () => {
     return new Promise(async (resolve, reject) => {
@@ -8,6 +8,91 @@ let getAllProduct = () => {
             await db.Product.findAll({
                 attributes: {
                     exclude: ["createdAt", "updatedAt"]
+                },
+                include: [
+                    {
+                        model: db.Category,
+                        attributes: {
+                            exclude: ["createdAt", "updatedAt"]
+                        },
+
+                    },
+
+                ],
+                raw: false
+            }).then(product => {
+                resolve({
+                    statusCode: 200,
+                    data: product
+                })
+            }).catch(error => {
+                resolve({
+                    statusCode: 400,
+                    message: error.message
+                })
+            })
+        } catch (error) {
+            resolve({
+                statusCode: 400,
+                message: "Server Error"
+            })
+        }
+    })
+}
+
+let searchProduct = (category_id, text) => {
+    return new Promise(async (resolve, reject) => {
+        console.log(text)
+        try {
+            await db.Product.findAll({
+                attributes: {
+                    exclude: ["createdAt", "updatedAt"]
+                },
+                where: {
+                    category_id: category_id,
+
+                    name: {
+                        [Op.like]: "%" + text + "%",
+                    },
+                },
+                include: {
+                    model: db.Category,
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"]
+                    }
+                },
+                raw: false
+            }).then(product => {
+                resolve({
+                    statusCode: 200,
+                    data: product
+                })
+            }).catch(error => {
+                console.log(error)
+                resolve({
+                    statusCode: 400,
+                    message: error.message
+                })
+            })
+        } catch (error) {
+
+            resolve({
+                statusCode: 400,
+                message: error.message
+            })
+        }
+    })
+}
+
+let getAllProductByCategory = (category_id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.Product.findAll({
+                attributes: {
+                    exclude: ["createdAt", "updatedAt", "category_id"]
+                },
+                where: {
+                    category_id: category_id
                 },
                 include: {
                     model: db.Category,
@@ -41,6 +126,7 @@ let createNewProduct = (data) => {
         try {
             if (!data.category_id || !data.name || !data.image_origin || !data.price) {
                 resolve({
+                    statusCode: 400,
                     message: "Missing required parameter!"
                 })
             }
@@ -57,14 +143,26 @@ let createNewProduct = (data) => {
                     }
                 })
                 if (!created) {
-                    resolve({ message: "Product already exists" })
+                    resolve({
+                        statusCode: 400,
+
+                        message: "Product already exists"
+                    })
                 }
                 else {
-                    resolve({ message: "Create new product success" })
+                    resolve({
+                        statusCode: 200,
+
+                        message: "Create new product success"
+                    })
                 }
             }
         } catch (error) {
-            reject({ error: error })
+            resolve({
+                statusCode: 400,
+
+                message: error.message
+            })
         }
     })
 }
@@ -152,5 +250,8 @@ module.exports = {
     getAllProduct,
     createNewProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAllProductByCategory,
+    searchProduct
+
 }

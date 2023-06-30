@@ -23,7 +23,7 @@ let initApiRoutes = (app) => {
     //user, admin
     router.post('/create-user', UserController.createNewUser)
     router.post('/login', UserController.login)
-    router.get('/all-size', checkToken, userPermit, SizeController.getAllSize)
+    router.get('/all-size', SizeController.getAllSize)
 
 
     //admin
@@ -37,10 +37,14 @@ let initApiRoutes = (app) => {
     router.put('/update-size', SizeController.updateSize)
     router.post('/create-product', ProductController.createNewProduct)
     router.get('/all-product', ProductController.getAllProduct)
+    router.get('/search-product', ProductController.searchProduct)
+    router.get('/all-product-category', ProductController.getAllProductByCategory)
 
 
     router.post('/create-product-size', ProductSizeController.createNewProductSize)
     router.get('/all-product-size', ProductSizeController.getAllProductSize)
+    // router.delete('/delete-product-size', ProductSizeController.deleteProductSize)
+    router.post('/import-product-size', ProductSizeController.importAmount)
     router.get('/detail-product-size', ProductSizeController.getSizeOfProduct)
     router.post('/verify', UserController.verify)
     router.post('/forget-password', UserController.forgetPassword)
@@ -54,6 +58,7 @@ let initApiRoutes = (app) => {
     router.post('/create-voucher', VoucherController.createNewVoucher)
     router.post('/create-voucher-user', VoucherUserController.createNewVoucherUser)
     router.delete('/delete-voucher', VoucherController.deleteVoucher)
+    router.delete('/delete-voucher-user', VoucherUserController.deleteVoucherUser)
 
     router.delete('/delete-cart-item', CartItemController.deleteCartItem)
     router.put('/decrease-quantity-item', CartItemController.decreaseQuantity)
@@ -76,6 +81,7 @@ let initApiRoutes = (app) => {
     router.post('/create-bill-item', BillItemController.createNewBillItem)
     router.get('/all-bill-pending', BillItemController.getAllBillPeding)
     router.get('/all-bill', BillItemController.getAllBill)
+    router.get('/all-bill-item-user', BillItemController.getAllBilItemUser)
     router.get('/bill-count', BillItemController.getBillCount)
     router.get('/all-bill-item', BillItemController.getAllBillItem)
     router.get('/all-bill-item-pending', BillItemController.getAllBillItemPending)

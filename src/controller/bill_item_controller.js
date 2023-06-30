@@ -53,7 +53,7 @@ let getAllBillItemPending = async (req, res) => {
 }
 
 let verifyOrder = async (req, res) => {
-    let result = await BillItemService.verifyOrder(req.query.id)
+    let result = await BillItemService.verifyOrder(req.body.id)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {
@@ -79,6 +79,15 @@ let getTopSellingProducts = async (req, res) => {
     }
 }
 
+let getAllBilItemUser = async (req, res) => {
+    let result = await BillItemService.getAllBilItemUser(req.query.user_id)
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
+}
+
 module.exports = {
     createNewBillItem,
     getAllBillPeding,
@@ -88,5 +97,6 @@ module.exports = {
     getAllBillItemPending,
     verifyOrder,
     verifyAllOrder,
-    getTopSellingProducts
+    getTopSellingProducts,
+    getAllBilItemUser,
 }

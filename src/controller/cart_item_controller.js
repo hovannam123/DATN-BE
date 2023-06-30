@@ -41,6 +41,7 @@ let decreaseQuantity = async (req, res) => {
 
 let increaseQuantity = async (req, res) => {
     let result = await CartItemService.increaseQuantity(req.body)
+    console.log(result)
     if (result.statusCode == 200) {
         res.status(200).json(result);
     } else {

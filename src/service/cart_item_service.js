@@ -1,6 +1,7 @@
 
 import { where } from "sequelize"
 import db from "../models"
+import { raw } from "body-parser"
 
 let createNewCartItem = (data, user_id) => {
     return new Promise(async (resolve, reject) => {
@@ -12,19 +13,6 @@ let createNewCartItem = (data, user_id) => {
                 })
             }
             else {
-                // let product = await db.Product.findOne({
-                //     include: {
-                //         model: db.ProductSize,
-                //         as: 'size_data',
-                //         where: {
-                //             id: data.product_size_id
-                //         }
-                //     },
-                //     raw: false
-
-                // })
-
-
                 let product = await db.Product.findOne({
                     where: {
                         id: data.product_id
@@ -35,7 +23,8 @@ let createNewCartItem = (data, user_id) => {
                     where: {
                         product_id: data.product_id,
                         size_id: data.size_id
-                    }
+                    },
+                    raw: false
                 })
 
                 if (product_size) {
@@ -61,14 +50,38 @@ let createNewCartItem = (data, user_id) => {
                                     product_size_id: product_size.id,
                                     user_id: user_id
                                 }
-                            })
+                            }
+                        ).then(async (_) => {
+                            if (product_size.amount >= data.quantity) {
+                                await product_size.update({
+                                    amount: product_size.amount - data.quantity
+                                })
+                            }
+                            else {
+                                resolve({
+                                    statusCode: 400,
+                                    message: "Excessive amount"
+                                })
+                            }
+
+                        })
                         resolve({
                             statusCode: 200,
-
                             message: "Increase quantity of cart item"
                         })
                     }
                     else {
+                        if (product_size.amount >= data.quantity) {
+                            await product_size.update({
+                                amount: product_size.amount - data.quantity
+                            })
+                        }
+                        else {
+                            resolve({
+                                statusCode: 400,
+                                message: "Excessive amount"
+                            })
+                        }
                         resolve({
                             statusCode: 200,
                             message: "Add to cart success"
@@ -150,7 +163,6 @@ let getAllCartItem = (user_id) => {
 let deleteCartItem = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log(data.cart_item_id)
             if (!data.cart_item_id) {
                 resolve({
                     statusCode: 400,
@@ -158,17 +170,38 @@ let deleteCartItem = (data) => {
                 })
             }
             else {
-                await db.CartItem.destroy(
+                await db.CartItem.findOne(
                     {
                         where: {
                             id: data.cart_item_id
-                        }
+                        },
+                        raw: false
                     }
-                ).then((_) => {
-                    resolve({
-                        statusCode: 200,
-                        message: "Delete success"
+                ).then(async (cart_item) => {
+                    let product_size = await db.ProductSize.findOne({
+                        where: {
+                            id: cart_item.product_size_id
+                        },
+                        raw: false
                     })
+                    await product_size.update({
+                        amount: product_size.amount + cart_item.quantity
+                    })
+                    await cart_item.destroy(
+
+                    ).then((_) => {
+                        resolve({
+                            statusCode: 200,
+                            message: "Delete success"
+                        })
+                    }).catch((err) => {
+                        resolve({
+                            statusCode: 400,
+                            message: err.message
+                        })
+                    })
+
+
                 }).catch((err) => {
                     resolve({
                         statusCode: 400,
@@ -191,6 +224,8 @@ let decreaseQuantity = (data) => {
         try {
             if (!data.cart_item_id) {
                 resolve({
+                    statusCode: 400,
+
                     message: "Invalid id"
                 })
             }
@@ -268,6 +303,7 @@ let increaseQuantity = (data) => {
         try {
             if (!data.cart_item_id) {
                 resolve({
+                    statusCode: 400,
                     message: "Invalid id"
                 })
             }

@@ -27,7 +27,7 @@ let createNewVoucher = (data) => {
             }
         } catch (e) {
             console.log(e)
-            resolve({ statusCode: 400, message: "Server error" })
+            resolve({ statusCode: 400, message: e.message })
         }
     })
 }
@@ -107,41 +107,42 @@ let getAllVoucherUser = (user_id) => {
 }
 
 
-let deleteVoucher = (id) => {
+let deleteVoucher = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!id) {
+            if (!data.voucher_id) {
                 resolve({
                     statusCode: 400,
                     message: "Invalid voucher id"
                 })
             }
             else {
-                await db.Voucher.destroy({
+                await db.VoucherUser.destroy({
                     where: {
-                        id: id
+                        voucher_id: data.voucher_id
                     },
-                    force: true
-                }).then(row => {
-                    if (row) {
-                        resolve({
-                            statusCode: 200,
-                            message: 'Delete success'
-                        })
-                    }
-                    else {
-                        resolve({
-                            statusCode: 400,
-                            message: 'Delete fail'
-                        })
-                    }
+                }).then(async (_) => {
+                    await db.Voucher.destroy({
+                        where: {
+                            id: data.voucher_id
+                        },
+                    })
+                    resolve({
+                        statusCode: 200,
+                        message: 'Delete success'
+                    })
+                }).catch((error) => {
+                    resolve({
+                        statusCode: 400,
+                        message: error.message
+                    })
                 })
             }
         } catch (error) {
             console.log(error)
             resolve({
                 statusCode: 400,
-                message: "Server error"
+                message: error.message
             })
         }
     })

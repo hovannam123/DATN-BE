@@ -111,38 +111,41 @@ let deleteSize = (id) => {
 let updateSize = (id, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!id || !data.size_name || !data.weigh || !data.height) {
+            if (!id || !data.weigh || !data.height) {
                 resolve({
+                    statusCode: 400,
                     message: "Missing required parameter!"
                 })
             }
             else {
-                let count = await db.Size.update({
-                    size_name: data.size_name,
+                await db.Size.update({
                     weigh: data.weigh,
                     height: data.height
                 },
                     {
                         where: {
                             id: id,
-                            delete_flag: 0
                         }
-                    })
-
-                if (count > 0) {
+                    }
+                ).then((_) => {
                     resolve({
+                        statusCode: 200,
                         message: "Update success"
                     })
-                }
-                else {
+                }).catch(error => {
                     resolve({
-                        message: "Update fail"
+                        statusCode: 400,
+                        message: error.message
                     })
-                }
+                })
+
+
             }
         } catch (error) {
-            reject({
-                error: error
+            resolve({
+                statusCode: 400,
+
+                message: error.message
             })
         }
     })

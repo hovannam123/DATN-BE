@@ -33,8 +33,13 @@ let deleteSize = async (req, res) => {
 }
 
 let updateSize = async (req, res) => {
-    let message = await SizeService.updateSize(req.query.id, req.body)
-    return res.status(200).json(message)
+    let result = await SizeService.updateSize(req.query.id, req.body)
+
+    if (result.statusCode == 200) {
+        res.status(200).json(result);
+    } else {
+        res.status(400).json(result);
+    }
 }
 
 

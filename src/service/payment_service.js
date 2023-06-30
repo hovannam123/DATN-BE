@@ -94,11 +94,11 @@ let payment = (user_id, voucher_user_id) => {
                         "payment_method": "paypal"
                     },
                     "redirect_urls": {
-                        "return_url": voucher_user_id != undefined ? ("http://localhost:3000/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("http://localhost:3000/api/v1/success?user_id=" + user_id),
-                        "cancel_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/cancel"
-
-                        // "return_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/success?user_id=" + user_id,
+                        // "return_url": voucher_user_id != undefined ? ("http://localhost:3000/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("http://localhost:3000/api/v1/success?user_id=" + user_id),
                         // "cancel_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/cancel"
+
+                        "return_url": voucher_user_id != undefined ? ("https://43ea-2405-4802-70cb-2810-3da4-ed31-c3ce-8ec7.ngrok-free.app/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("https://43ea-2405-4802-70cb-2810-3da4-ed31-c3ce-8ec7.ngrok-free.app/api/v1/success?user_id=" + user_id),
+                        "cancel_url": "https://feec-2405-4802-70cb-2810-6111-d67a-1812-a9f0.ngrok-free.app/api/v1/cancel"
                     },
                     "transactions": [{
                         "item_list": {

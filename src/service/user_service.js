@@ -2,7 +2,7 @@ import db from "../models"
 import { genSaltSync, hashSync, compareSync } from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { generateDigitCode, sendMail } from "../service/email_service"
-import { raw } from "body-parser"
+const { Op } = require("sequelize");
 
 let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -64,16 +64,43 @@ let createNewUser = (data) => {
 let getAllUser = () => {
     return new Promise(async (resolve, reject) => {
         try {
+            const currentDate = new Date();
+            const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
             await db.User.findAll({
                 where: {
-                    role_id: 2
+                    role_id: 2,
+
                 },
                 attributes: {
-                    exclude: ["role_id", "verify_code", "expired_time"]
+                    exclude: ['role_id', 'expired_time', 'verify_code', 'createdAt', 'updatedAt'],
                 },
-                include: {
-                    model: db.UserInformation
-                },
+                include: [
+                    {
+                        model: db.UserInformation,
+
+                    },
+
+                    {
+                        model: db.Bill,
+                        as: 'bill_data',
+                        where: {
+                            createdAt: {
+                                [Op.between]: [startOfMonth, endOfMonth]
+                            }
+                        },
+                        attributes: [
+                            [db.sequelize.fn('COUNT', db.sequelize.col('bill_data.id')), 'total_bill'],
+                            [db.sequelize.fn('SUM', db.sequelize.col('bill_data.total_payment')), 'total_payment'],
+                        ]
+
+
+                    },
+                ],
+
+                group: ['User.id'],
+                order: [[db.sequelize.literal('COUNT(`bill_data`.`id`)'), 'DESC']],
+                // order: db.sequelize.literal('counts DESC'),
                 raw: false
             }).then(data => {
                 resolve({
@@ -81,6 +108,8 @@ let getAllUser = () => {
                     data: data
                 })
             }).catch(err => {
+                console.log(err)
+
                 resolve({
                     statusCode: 400,
                     error: err.message
@@ -94,6 +123,7 @@ let getAllUser = () => {
         }
     })
 }
+
 
 let getDetailUser = (id) => {
     return new Promise(async (resolve, reject) => {
@@ -118,6 +148,7 @@ let getDetailUser = (id) => {
                                 exclude: ["createdAt", "updatedAt"]
                             },
                         }
+
                     ],
                     raw: false
                 }).then(data => {
@@ -381,5 +412,5 @@ module.exports = {
     verify,
     forgetPassword,
     resetPassword,
-    updateUserInformation
+    updateUserInformation,
 }
