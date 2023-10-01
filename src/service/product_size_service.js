@@ -71,6 +71,12 @@ let getSizeOfProduct = (product_id) => {
                         }
                     },
                     {
+                        model: db.ProductImage,
+                        attributes: {
+                            exclude: ["createdAt", "updatedAt"]
+                        }
+                    },
+                    {
                         model: db.ProductSize,
                         as: "size_data",
                         attributes: ["id", "amount"],

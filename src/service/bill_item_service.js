@@ -52,8 +52,12 @@ let createNewBillItem = (user_id, voucher_user_id) => {
                 await db.BillItem.bulkCreate(
                     mappedBillItems
                 ).then(async (bill_items) => {
+
                     let percent = 0
-                    if (voucher_user_id != undefined) {
+                    if (voucher_user_id == undefined) {
+                        percent = 0
+                    }
+                    else {
                         let voucher = await db.VoucherUser.findOne(
                             {
                                 where: {
@@ -63,16 +67,12 @@ let createNewBillItem = (user_id, voucher_user_id) => {
                                     model: db.Voucher
                                 },
                                 raw: false
-
                             }
                         )
-                        percent = voucher.Voucher.value_percent
-
+                        if (voucher) {
+                            percent = voucher.Voucher.value_percent
+                        }
                     }
-                    else {
-                        percent = 0
-                    }
-
 
                     let total_origin = await getTotal_oririgin(bill_items);
                     await bill.update({
@@ -192,8 +192,15 @@ let getBillCount = () => {
 let getAllBill = () => {
     return new Promise(async (resolve, reject) => {
         try {
-
+            const currentDate = new Date();
+            const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
             await db.Bill.findAll({
+                where: {
+                    createdAt: {
+                        [Op.between]: [startOfMonth, endOfMonth]
+                    }
+                },
                 attributes: {
                     exclude: ["updatedAt", "bill_id"]
                 },

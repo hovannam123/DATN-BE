@@ -138,11 +138,7 @@ let getTopProductFavourite = () => {
 
 
             const topProductFavourite = await db.ProductFavourite.findAll({
-                where: {
-                    createdAt: {
-                        [Op.between]: [startOfMonth, endOfMonth]
-                    }
-                },
+
                 attributes: [
                     [db.sequelize.fn('COUNT', db.sequelize.col('ProductFavourite.id')), 'total_favourite']
                 ],
@@ -158,6 +154,8 @@ let getTopProductFavourite = () => {
                 ],
                 raw: false,
             });
+            console.log('topProductFavourite')
+            console.log(topProductFavourite)
             resolve({
                 statusCode: 200,
                 data: topProductFavourite

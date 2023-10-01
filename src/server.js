@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import connectDB from './config/connectDB'
 import initAPIRoute from './router/routers'
 const paypal = require('paypal-rest-sdk');
+const cors = require("cors");
 
 dotenv.config({
     path: './.env'
@@ -12,6 +13,8 @@ const app = express()
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cors());
+
 
 
 
@@ -26,11 +29,11 @@ initAPIRoute(app)
 
 //middleware
 
-// app.use((req, res) => {
-//     res.status(404).json({
-//         message: 'Not found request'
-//     })
-// })
+app.use((req, res) => {
+    res.status(404).json({
+        message: 'Not found request'
+    })
+})
 
 
 connectDB()

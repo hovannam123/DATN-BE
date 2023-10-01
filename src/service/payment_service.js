@@ -17,7 +17,10 @@ let getTotal = (map) => {
 
 let getPercent = async (voucher_user_id) => {
     let percent = 0
-    if (voucher_user_id != undefined) {
+    if (voucher_user_id == undefined) {
+        percent = 0
+    }
+    else {
         let voucher = await db.VoucherUser.findOne(
             {
                 where: {
@@ -27,14 +30,11 @@ let getPercent = async (voucher_user_id) => {
                     model: db.Voucher
                 },
                 raw: false
-
             }
         )
-        percent = voucher.Voucher.value_percent
-
-    }
-    else {
-        percent = 0
+        if (voucher) {
+            percent = voucher.Voucher.value_percent
+        }
     }
 
     return percent
@@ -77,63 +77,76 @@ let payment = (user_id, voucher_user_id) => {
                 ],
                 raw: false
             }).then(async (cart_item) => {
-                map_cart_item = cart_item.map((item) => {
-                    return {
-                        name: item.product_size.Product.name,
-                        price: (item.product_size.Product.price / 23000).toFixed(2),
-                        currency: "USD",
-                        quantity: item.quantity,
-                    }
-                })
 
-                let total = getTotal(map_cart_item)
-                let voucher_price = (await getPercent(voucher_user_id) * total).toFixed(2)
-                const create_payment_json = {
-                    "intent": "sale",
-                    "payer": {
-                        "payment_method": "paypal"
-                    },
-                    "redirect_urls": {
-                        // "return_url": voucher_user_id != undefined ? ("http://localhost:3000/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("http://localhost:3000/api/v1/success?user_id=" + user_id),
-                        // "cancel_url": "https://c4cd-2405-4802-60f2-4770-61f2-560b-6247-d611.ngrok-free.app/api/v1/cancel"
+                if (cart_item.length == 0) {
+                    resolve({
+                        statusCode: 400,
+                        message: "Cart item null"
+                    })
+                }
+                else {
+                    map_cart_item = cart_item.map((item) => {
+                        return {
+                            name: item.product_size.Product.name,
+                            price: (item.product_size.Product.price / 23000).toFixed(2),
+                            currency: "USD",
+                            quantity: item.quantity,
+                        }
+                    })
 
-                        "return_url": voucher_user_id != undefined ? ("https://43ea-2405-4802-70cb-2810-3da4-ed31-c3ce-8ec7.ngrok-free.app/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("https://43ea-2405-4802-70cb-2810-3da4-ed31-c3ce-8ec7.ngrok-free.app/api/v1/success?user_id=" + user_id),
-                        "cancel_url": "https://feec-2405-4802-70cb-2810-6111-d67a-1812-a9f0.ngrok-free.app/api/v1/cancel"
-                    },
-                    "transactions": [{
-                        "item_list": {
-                            "items": map_cart_item
+                    let total = getTotal(map_cart_item)
+                    let voucher_price = (await getPercent(voucher_user_id) * total).toFixed(2)
+
+                    const create_payment_json = {
+                        "intent": "sale",
+                        "payer": {
+                            "payment_method": "paypal"
                         },
+                        "redirect_urls": {
+                            "return_url": voucher_user_id != undefined ? ("http://localhost:3000/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id) : ("http://localhost:3000/api/v1/success?user_id=" + user_id),
+                            "cancel_url": "http://localhost:3000/api/v1/cancel"
 
-                        "amount": {
-                            "currency": "USD",
-                            "total": (total - voucher_price).toFixed(2),
-                            "details": {
-                                "subtotal": total,
-                                "discount": voucher_price // Discount amount
-                            }
+                            // "return_url": ("https://api.safefood.fun/api/v1/success?user_id=" + user_id + "&voucher_user_id=" + voucher_user_id),
+                            // "cancel_url": "https://api.safefood.fun/api/v1/cancel"
+
+
                         },
-                    }]
-                };
+                        "transactions": [{
+                            "item_list": {
+                                "items": map_cart_item
+                            },
 
-                paypal.payment.create(create_payment_json, function (error, payment) {
-                    if (error) {
-                        throw error;
-                    } else {
-                        for (let i = 0; i < payment.links.length; i++) {
-                            if (payment.links[i].rel === 'approval_url') {
-                                resolve({
-                                    statusCode: 200,
-                                    url: payment.links[i].href
-                                })
+                            "amount": {
+                                "currency": "USD",
+                                "total": (total - voucher_price).toFixed(2),
+                                "details": {
+                                    "subtotal": total,
+                                    "discount": voucher_price // Discount amount
+                                }
+                            },
+                        }]
+                    };
+
+                    paypal.payment.create(create_payment_json, function (error, payment) {
+                        if (error) {
+                            throw error;
+                        } else {
+                            for (let i = 0; i < payment.links.length; i++) {
+                                if (payment.links[i].rel === 'approval_url') {
+                                    resolve({
+                                        statusCode: 200,
+                                        url: payment.links[i].href
+                                    })
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             })
         }
         catch (err) {
             resolve({
+                statusCode: 400,
                 message: err.message
             })
         }
@@ -164,13 +177,14 @@ let paymentSuccess = (payerId, paymentId, user_id, voucher_user_id) => {
                     message: error.message
                 })
             } else {
+
                 await BillItemService.createNewBillItem(user_id, voucher_user_id).then(async (bill) => {
-                    console.log(bill)
                     await db.CartItem.destroy({
                         where: {
                             user_id: user_id
                         }
                     })
+
                     resolve({
                         statusCode: 200,
                         message: "Success"

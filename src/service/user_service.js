@@ -16,8 +16,6 @@ let createNewUser = (data) => {
             else {
                 let salt = genSaltSync(10)
                 let password = hashSync(data.password, salt)
-                const code = generateDigitCode()
-                console.log("aaa")
                 const [user, created] = await db.User.findOrCreate({
                     where: {
                         email: data.email
@@ -25,7 +23,6 @@ let createNewUser = (data) => {
                     defaults: {
                         password: password,
                         phone_number: data.phone_number,
-                        verify_code: code
                     }
                 }).catch((error) => {
                     resolve({
@@ -44,7 +41,6 @@ let createNewUser = (data) => {
                     await db.UserInformation.create({
                         user_id: user.id,
                     })
-                    sendMail(user.email, code)
                     resolve({
                         statusCode: 200,
                         message: "Create new user success"
@@ -52,6 +48,8 @@ let createNewUser = (data) => {
                 }
             }
         } catch (e) {
+            console.log(e)
+
             resolve({
                 statusCode: 400,
                 message: e.message
@@ -253,14 +251,14 @@ let login = (data) => {
                             token: token,
                             user: user
                         })
+
                     }
                 }
             }
         } catch (e) {
             resolve(
                 {
-                    statusCode: 200,
-
+                    statusCode: 400,
                     message: e.message
                 })
         }
@@ -340,29 +338,34 @@ let forgetPassword = (data) => {
                 })
             }
             else {
-                await db.User.findOne({
+                let user = await db.User.findOne({
                     where: {
                         email: data.email
-                    }
-                }).then(async user => {
-                    await db.User.update({ expired_time: new Date() }, { where: { id: user.id } })
-                    sendMail(user.email, user.verify_code)
-                    resolve({
-                        statusCode: 200,
-                        message: "Send verify code to your email success"
+                    },
+                    raw: false
+                })
+
+                if (user) {
+                    let code = generateDigitCode()
+                    await user.update({ verify_code: code, expired_time: new Date() }).then((_) => {
+                        sendMail(user.email, code)
+                        resolve({
+                            statusCode: 200,
+                            message: "Send verify code to your email success"
+                        })
                     })
-                }).catch(error => {
+                }
+                else {
                     resolve({
                         statusCode: 400,
-                        message: error.message
+                        message: "No email valid!"
                     })
-                })
+                }
             }
         } catch (error) {
             resolve({
                 statusCode: 400,
-
-                message: error
+                message: error.message
             })
         }
     })

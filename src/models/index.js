@@ -17,7 +17,7 @@ const customizeConfig = {
   dialect: process.env.DB_DIALECT,
   logging: false,
   query: {
-    "raw": true
+    "raw": false
   },
   timezone: "+07:00"
 }

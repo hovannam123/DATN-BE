@@ -10,10 +10,16 @@ const sequelize = new Sequelize(
     'root',
     '123456',
     {
-        //103.166.185.208
-        host: process.env.DB_HOST,
-        dialect: process.env.DB_DIALECT,
-        port: process.env.DB_PORT,
+
+        // host: process.env.DB_HOST,
+        // dialect: process.env.DB_DIALECT,
+        // port: process.env.DB_PORT,
+        // logging: false,
+        // timezone: "+07:00"
+
+        host: "localhost",
+        dialect: "mysql",
+        port: 3306,
         logging: false,
         timezone: "+07:00"
     });
